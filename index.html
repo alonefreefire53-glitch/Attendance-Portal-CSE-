@@ -6,14 +6,42 @@
     <title>Student Attendance Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Standalone System Media Queries for Cross-Device Layout Standardization */
+        @media (max-width: 768px) {
+            .mobile-scroll-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .sidebar-hidden {
+                transform: translateX(-100%);
+                transition: transform 0.2s ease-in-out;
+            }
+            .sidebar-visible {
+                transform: translateX(0);
+                transition: transform 0.2s ease-in-out;
+                position: fixed;
+                z-index: 50;
+                height: 100vh;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased text-gray-800">
 
-    <div class="flex h-screen overflow-hidden">
-        <aside class="w-64 bg-indigo-900 text-white flex flex-col justify-between hidden md:flex">
+    <div class="flex h-screen overflow-hidden relative">
+        
+        <!-- Responsive Sidebar -->
+        <aside id="sidebar-container" class="w-64 bg-indigo-900 text-white flex flex-col justify-between hidden md:flex sidebar-hidden md:transform-none">
             <div>
-                <div class="p-5 text-2xl font-bold tracking-wider border-b border-indigo-800 flex items-center gap-2">
-                    <span class="material-icons">school</span> Attendify
+                <div class="p-5 text-2xl font-bold tracking-wider border-b border-indigo-800 flex items-center justify-between gap-2">
+                    <span class="flex items-center gap-2"><span class="material-icons">school</span> Attendify</span>
+                    <!-- Mobile Sidebar Close Trigger -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-indigo-200 hover:text-white">
+                        <span class="material-icons">close</span>
+                    </button>
                 </div>
                 <nav class="p-4 space-y-2">
                     <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-800 text-white font-medium transition-all">
@@ -29,92 +57,99 @@
             </div>
             <div class="p-4 border-t border-indigo-800">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-indigo-700 flex items-center justify-center font-bold text-lg">HOD</div>
-                    <div>
-                        <p class="text-sm font-semibold">Er. Sandeep Kumar</p>
-                        <p class="text-xs text-indigo-300">Department of CS</p>
+                    <div class="w-10 h-10 rounded-full bg-indigo-700 flex items-center justify-center font-bold text-lg flex-shrink-0">HOD</div>
+                    <div class="min-w-0 truncate">
+                        <p class="text-sm font-semibold truncate">Er. Sandeep Kumar</p>
+                        <p class="text-xs text-indigo-300 truncate">Department of CS</p>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col overflow-y-auto">
-            <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <button class="md:hidden text-gray-600 focus:outline-none">
+        <!-- Main Content Viewport -->
+        <main class="flex-1 flex flex-col overflow-y-auto w-full">
+            <header class="bg-white shadow-sm px-4 md:px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-600 focus:outline-none p-1 rounded-md hover:bg-gray-100">
                         <span class="material-icons">menu</span>
                     </button>
-                    <h1 id="page-title" class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                    <h1 id="page-title" class="text-xl md:text-2xl font-bold text-gray-800">Dashboard</h1>
                 </div>
-                <div class="text-sm font-medium text-gray-500" id="current-date"></div>
+                <div class="text-xs md:text-sm font-medium text-gray-500 hidden sm:block" id="current-date"></div>
             </header>
 
-            <div class="p-6 max-w-7xl w-full mx-auto space-y-6">
+            <div class="p-4 md:p-6 max-w-7xl w-full mx-auto space-y-6">
 
+                <!-- DASHBOARD VIEW -->
                 <section id="view-dashboard" class="space-y-6">
-                    <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-wrap items-center justify-between gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h2 class="text-md font-bold text-gray-800">Tracked Metrics Overview</h2>
                             <p class="text-xs text-gray-400">Review cumulative life logs or jump to a specific date matrix below.</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <label for="dashboard-date-picker" class="text-xs font-bold uppercase text-gray-500">Filter By Date:</label>
-                            <input type="date" id="dashboard-date-picker" onchange="renderSubjectCards()" class="bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <label for="dashboard-date-picker" class="text-xs font-bold uppercase text-gray-500 whitespace-nowrap">Date:</label>
+                            <input type="date" id="dashboard-date-picker" onchange="renderSubjectCards()" class="w-full sm:w-auto bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                    <!-- Top Summary Stats Grid -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                        <div class="bg-white p-4 md:p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-400 font-medium uppercase">Total Students</p>
-                                <p id="total-stat" class="text-3xl font-bold mt-1 text-gray-900">0</p>
+                                <p class="text-[10px] md:text-sm text-gray-400 font-medium uppercase">Total Students</p>
+                                <p id="total-stat" class="text-xl md:text-3xl font-bold mt-1 text-gray-900">0</p>
                             </div>
-                            <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><span class="material-icons">groups</span></div>
+                            <div class="p-2 md:p-3 bg-blue-50 text-blue-600 rounded-lg"><span class="material-icons text-base md:text-default">groups</span></div>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                        <div class="bg-white p-4 md:p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-400 font-medium uppercase">Selected Date Present</p>
-                                <p id="present-stat" class="text-3xl font-bold mt-1 text-green-600">0</p>
+                                <p class="text-[10px] md:text-sm text-gray-400 font-medium uppercase">Date Present</p>
+                                <p id="present-stat" class="text-xl md:text-3xl font-bold mt-1 text-green-600">0</p>
                             </div>
-                            <div class="p-3 bg-green-50 text-green-600 rounded-lg"><span class="material-icons">check_circle</span></div>
+                            <div class="p-2 md:p-3 bg-green-50 text-green-600 rounded-lg"><span class="material-icons text-base md:text-default">check_circle</span></div>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                        <div class="bg-white p-4 md:p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-400 font-medium uppercase">Selected Date Absent</p>
-                                <p id="absent-stat" class="text-3xl font-bold mt-1 text-red-600">0</p>
+                                <p class="text-[10px] md:text-sm text-gray-400 font-medium uppercase">Date Absent</p>
+                                <p id="absent-stat" class="text-xl md:text-3xl font-bold mt-1 text-red-600">0</p>
                             </div>
-                            <div class="p-3 bg-red-50 text-red-600 rounded-lg"><span class="material-icons">cancel</span></div>
+                            <div class="p-2 md:p-3 bg-red-50 text-red-600 rounded-lg"><span class="material-icons text-base md:text-default">cancel</span></div>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                        <div class="bg-white p-4 md:p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-400 font-medium uppercase">Total Subjects</p>
-                                <p id="subjects-count-stat" class="text-3xl font-bold mt-1 text-indigo-600">4</p>
+                                <p class="text-[10px] md:text-sm text-gray-400 font-medium uppercase">Total Subjects</p>
+                                <p id="subjects-count-stat" class="text-xl md:text-3xl font-bold mt-1 text-indigo-600">4</p>
                             </div>
-                            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg"><span class="material-icons">menu_book</span></div>
+                            <div class="p-2 md:p-3 bg-indigo-50 text-indigo-600 rounded-lg"><span class="material-icons text-base md:text-default">menu_book</span></div>
                         </div>
                     </div>
 
+                    <!-- SUBJECT-WISE ATTENDANCE SECTION -->
                     <div>
                         <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <span class="material-icons text-indigo-600">class</span> Subject-wise Attendance Metrics
+                            <span class="material-icons text-indigo-600">class</span> Subject Attendance Metrics
                         </h3>
-                        <div id="subject-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            </div>
+                        <div id="subject-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <!-- Injected dynamically by JavaScript -->
+                        </div>
                     </div>
                 </section>
 
+                <!-- MARK ATTENDANCE VIEW -->
                 <section id="view-mark-attendance" class="hidden space-y-6">
-                    <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-wrap gap-4 items-end">
-                        <div class="flex-1 min-w-[200px]">
+                    <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-col md:flex-row gap-4 items-stretch md:items-end">
+                        <div class="flex-1 min-w-0">
                             <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Select Subject/Class</label>
                             <select id="subject-dropdown" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
-                                </select>
+                                <!-- Injected dynamically by JavaScript -->
+                            </select>
                         </div>
-                        <div class="min-w-[180px]">
+                        <div class="w-full md:w-48">
                             <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Attendance Date</label>
                             <input type="date" id="attendance-date-picker" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500 font-medium">
                         </div>
-                        <div class="w-full sm:w-auto">
+                        <div>
                             <button onclick="submitAttendance()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-xs flex items-center justify-center gap-2 transition-colors">
                                 <span class="material-icons text-sm">save</span> Submit Sheet
                             </button>
@@ -122,76 +157,89 @@
                     </div>
 
                     <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                    <th class="p-4 w-24">Roll No.</th>
-                                    <th class="p-4">Student Name</th>
-                                    <th class="p-4 text-center w-48">Status Toggle</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendance-roster" class="divide-y divide-gray-100 text-sm">
-                            </tbody>
-                        </table>
+                        <div class="mobile-scroll-table">
+                            <table class="w-full text-left border-collapse min-w-[500px] md:min-w-full">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                        <th class="p-4 w-28">Roll No.</th>
+                                        <th class="p-4">Student Name</th>
+                                        <th class="p-4 text-center w-48">Status Toggle</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-roster" class="divide-y divide-gray-100 text-sm">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
+                <!-- REPORTS VIEW -->
                 <section id="view-reports" class="hidden space-y-6">
-                    <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <!-- Date Window and Subject Filters -->
+                    <div class="bg-white p-4 md:p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                         <div>
                             <h3 class="font-bold text-gray-800 text-lg">Dynamic Performance & Defaulter Ledger</h3>
                             <p class="text-xs text-gray-400 mt-0.5">Generates ranked lists and tracks criteria thresholds based on timeline logs.</p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4">
                             <div class="w-full sm:w-64">
                                 <label for="report-subject-dropdown" class="block text-xs font-bold uppercase text-gray-500 mb-1">Subject Scope:</label>
                                 <select id="report-subject-dropdown" onchange="generateSortedReport()" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
                                     <option value="all">-- All Subjects Aggregate --</option>
-                                    </select>
+                                    <!-- Injected dynamically by JavaScript -->
+                                </select>
                             </div>
-                            <div>
-                                <label for="report-from-date" class="block text-xs font-bold uppercase text-gray-500 mb-1">From:</label>
-                                <input type="date" id="report-from-date" onchange="generateSortedReport()" class="bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
-                            </div>
-                            <div>
-                                <label for="report-to-date" class="block text-xs font-bold uppercase text-gray-500 mb-1">To:</label>
-                                <input type="date" id="report-to-date" onchange="generateSortedReport()" class="bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                            <div class="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                                <div>
+                                    <label for="report-from-date" class="block text-xs font-bold uppercase text-gray-500 mb-1">From:</label>
+                                    <input type="date" id="report-from-date" onchange="generateSortedReport()" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                                </div>
+                                <div>
+                                    <label for="report-to-date" class="block text-xs font-bold uppercase text-gray-500 mb-1">To:</label>
+                                    <input type="date" id="report-to-date" onchange="generateSortedReport()" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-red-50 border border-red-200 p-5 rounded-xl space-y-3">
+                    <!-- CRITICAL ADDITION: STRICT DEFAULTERS ONLY CORNER -->
+                    <div class="bg-red-50 border border-red-200 p-4 md:p-5 rounded-xl space-y-3">
                         <div class="flex items-center justify-between border-b border-red-200 pb-2">
                             <h4 class="text-red-800 font-bold text-sm flex items-center gap-2">
-                                <span class="material-icons text-red-600">gavel</span> Flagged Defaulter Roster (&lt; 75% Attendance Only)
+                                <span class="material-icons text-red-600">gavel</span> Flagged Defaulter Roster (&lt; 75%)
                             </h4>
                             <span id="defaulter-badge-count" class="bg-red-600 text-white font-bold text-xs px-2.5 py-0.5 rounded-full">0 Students</span>
                         </div>
                         <div id="defaulter-grid-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            </div>
+                            <!-- Injected dynamically via JS -->
+                        </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
+                    <!-- COMPLETE MASTER MATRIX TABLE -->
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-xs border border-gray-100">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-gray-800 text-md flex items-center gap-2">
-                                <span class="material-icons text-indigo-600">sort</span> Full Performance Matrix (All Students Ranked)
+                                <span class="material-icons text-indigo-600">sort</span> Full Performance Matrix (All Ranked)
                             </h3>
                         </div>
                         <div class="overflow-hidden border border-gray-100 rounded-lg">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase">
-                                    <tr>
-                                        <th class="p-4 w-12 text-center">Rank</th>
-                                        <th class="p-4">Roll No.</th>
-                                        <th class="p-4">Student Name</th>
-                                        <th class="p-4">Classes Conducted</th>
-                                        <th class="p-4">Classes Attended</th>
-                                        <th class="p-4">Total Percentage</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="report-table-body" class="divide-y divide-gray-100 text-sm text-gray-600">
+                            <div class="mobile-scroll-table">
+                                <table class="w-full text-left border-collapse min-w-[650px] md:min-w-full">
+                                    <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase">
+                                        <tr>
+                                            <th class="p-4 w-12 text-center">Rank</th>
+                                            <th class="p-4">Roll No.</th>
+                                            <th class="p-4">Student Name</th>
+                                            <th class="p-4">Conducted</th>
+                                            <th class="p-4">Attended</th>
+                                            <th class="p-4">Total Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="report-table-body" class="divide-y divide-gray-100 text-sm text-gray-600">
+                                        <!-- Populated dynamically via JavaScript execution -->
                                     </tbody>
-                            </table>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -201,7 +249,7 @@
     </div>
 
     <script>
-        // Default Subject Tracker Initialization
+        // Subject Tracker Initialization
         const subjectData = {
             "sub-1": { name: "Code- 2418501: Data Communication and Computer Network", targetLectures: 40, lecturesDone: 0, totalPresent: 0 },
             "sub-2": { name: "Code- 2418502: Software Engineering", targetLectures: 40, lecturesDone: 0, totalPresent: 0 },
@@ -209,10 +257,9 @@
             "sub-4": { name: "Code- 2400504: Drone Technology", targetLectures: 40, lecturesDone: 0, totalPresent: 0 }
         };
 
-        // Master Historic Ledger Log Array
         const submissionHistory = [];
 
-        // Student Database Array
+        // Student Dataset
         const students = [
             { Roll: "24/CSE-001", Name: "Anushri Singh" },{ Roll: "24/CSE-002", Name: "Sakhsham Raj" },{ Roll: "24/CSE-004", Name: "Piyush Kumar Choudhary" },
             { Roll: "24/CSE-007", Name: "Md. Sakir Jalal"},{ Roll: "24/CSE-008", Name: "Amrit Raj" },{ Roll: "24/CSE-009", Name: "Kabyanjali Sinha" },
@@ -224,7 +271,6 @@
             { Roll: "24/CSE-051", Name: "Alok Kumar" }, { Roll: "24/CSE-058", Name: "Sanjeev Kumar" },{ Roll: "24/CSE-060", Name: "Deepak Kumar" }
         ];
 
-        // Format and set up local time tracking defaults
         const todayISODate = new Date().toISOString().split('T')[0];
         document.getElementById('dashboard-date-picker').value = todayISODate;
         document.getElementById('attendance-date-picker').value = todayISODate;
@@ -235,11 +281,27 @@
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
         });
 
-        // Render Subject Cards to Dashboard
+        // Toggle Mobile Menu Navigation
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar-container');
+            if(sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                setTimeout(() => {
+                    sidebar.classList.remove('sidebar-hidden');
+                    sidebar.classList.add('sidebar-visible');
+                }, 10);
+            } else {
+                sidebar.classList.remove('sidebar-visible');
+                sidebar.classList.add('sidebar-hidden');
+                setTimeout(() => {
+                    sidebar.classList.add('hidden');
+                }, 200);
+            }
+        }
+
         function renderSubjectCards() {
             const gridContainer = document.getElementById('subject-cards-grid');
             gridContainer.innerHTML = '';
-
             const activeFilterDate = document.getElementById('dashboard-date-picker').value;
             
             let globalFilteredPresent = 0;
@@ -261,35 +323,32 @@
                 const badgeColor = overallPercentage >= 75 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
 
                 const cardHtml = `
-                    <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col justify-between space-y-4">
+                    <div class="bg-white p-4 md:p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col justify-between space-y-4">
                         <div>
                             <div class="flex justify-between items-start gap-2">
-                                <h4 class="font-bold text-gray-800 text-sm line-clamp-2">${sub.name}</h4>
-                                <span class="text-xs px-2.5 py-1 font-semibold rounded-full ${badgeColor}">${overallPercentage}% Attended</span>
+                                <h4 class="font-bold text-gray-800 text-xs md:text-sm line-clamp-2">${sub.name}</h4>
+                                <span class="text-[10px] md:text-xs px-2 py-0.5 md:py-1 font-semibold rounded-full whitespace-nowrap ${badgeColor}">${overallPercentage}%</span>
                             </div>
-                            <p class="text-xs text-gray-400 mt-1">Course Allocation Tracking</p>
                         </div>
-
                         <div class="bg-indigo-50/50 p-2.5 rounded-lg border border-indigo-100/60 space-y-1">
-                            <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Metrics On Chosen Date (${activeFilterDate}):</p>
-                            <div class="flex justify-between text-xs font-semibold text-gray-700">
-                                <span>Lectures Marked Today: <b class="text-gray-900">${dateLecturesCount}</b></span>
-                                <span>Attended: <b class="text-indigo-600">${datePresentCount} / ${dateTotalSeats}</b></span>
+                            <p class="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Today (${activeFilterDate}):</p>
+                            <div class="flex justify-between text-[11px] font-semibold text-gray-700">
+                                <span>Lectures: <b class="text-gray-900">${dateLecturesCount}</b></span>
+                                <span>Attended: <b class="text-indigo-600">${datePresentCount}/${dateTotalSeats}</b></span>
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-50 text-center">
+                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-50 text-center text-xs">
                             <div>
-                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total Lectures</p>
-                                <p class="text-lg font-bold text-gray-700 mt-0.5">${sub.targetLectures}</p>
+                                <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Target</p>
+                                <p class="font-bold text-gray-700">${sub.targetLectures}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Lectures Done</p>
-                                <p class="text-lg font-bold text-indigo-600 mt-0.5">${sub.lecturesDone}</p>
+                                <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Done</p>
+                                <p class="font-bold text-indigo-600">${sub.lecturesDone}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total Attended</p>
-                                <p class="text-lg font-bold text-green-600 mt-0.5">${sub.totalPresent}</p>
+                                <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Attended</p>
+                                <p class="font-bold text-green-600">${sub.totalPresent}</p>
                             </div>
                         </div>
                     </div>
@@ -300,10 +359,8 @@
             document.getElementById('present-stat').innerText = globalFilteredPresent;
             document.getElementById('absent-stat').innerText = globalFilteredAbsent;
             document.getElementById('total-stat').innerText = students.length;
-            document.getElementById('subjects-count-stat').innerText = Object.keys(subjectData).length;
         }
 
-        // Initialize and Render the Student Attendance Sheet and dropdown items
         function initAttendanceSheet() {
             const dropdown = document.getElementById('subject-dropdown');
             const reportDropdown = document.getElementById('report-subject-dropdown');
@@ -331,11 +388,11 @@
                     <td class="p-4 font-medium text-gray-900">${student.Name}</td>
                     <td class="p-4 text-center">
                         <div class="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-100">
-                            <button type="button" onclick="toggleStatus(this, 'P')" class="status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-green-600 text-white shadow-xs">
-                                Present
+                            <button type="button" onclick="toggleStatus(this, 'P')" class="status-btn px-3 md:px-4 py-1 rounded-md text-xs font-bold transition-all bg-green-600 text-white shadow-xs">
+                                P
                             </button>
-                            <button type="button" onclick="toggleStatus(this, 'A')" class="status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-gray-500 hover:text-gray-900">
-                                Absent
+                            <button type="button" onclick="toggleStatus(this, 'A')" class="status-btn px-3 md:px-4 py-1 rounded-md text-xs font-bold transition-all text-gray-500 hover:text-gray-900">
+                                A
                             </button>
                         </div>
                     </td>
@@ -351,13 +408,13 @@
             row.setAttribute('data-status', status);
 
             buttons.forEach(b => {
-                b.className = 'status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-gray-500 hover:text-gray-900';
+                b.className = 'status-btn px-3 md:px-4 py-1 rounded-md text-xs font-bold transition-all text-gray-500';
             });
 
             if (status === 'P') {
-                btn.className = 'status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-green-600 text-white shadow-xs';
+                btn.className = 'status-btn px-3 md:px-4 py-1 rounded-md text-xs font-bold transition-all bg-green-600 text-white shadow-xs';
             } else {
-                btn.className = 'status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-red-600 text-white shadow-xs';
+                btn.className = 'status-btn px-3 md:px-4 py-1 rounded-md text-xs font-bold transition-all bg-red-600 text-white shadow-xs';
             }
         }
 
@@ -365,10 +422,7 @@
             const selectedSubjectKey = document.getElementById('subject-dropdown').value;
             const chosenDate = document.getElementById('attendance-date-picker').value;
             
-            if(!chosenDate) {
-                alert("Please select a valid submission date.");
-                return;
-            }
+            if(!chosenDate) return;
 
             const rows = document.querySelectorAll('.student-row');
             let presentCount = 0;
@@ -400,12 +454,9 @@
             document.getElementById('dashboard-date-picker').value = chosenDate;
             renderSubjectCards();
             generateSortedReport(); 
-
-            alert(`Attendance Sheet Logged Successfully!\nDate: ${chosenDate}\nSubject: ${subjectData[selectedSubjectKey].name}\nPresent: ${presentCount}\nAbsent: ${absentCount}`);
             switchView('dashboard');
         }
 
-        // Generate Sorted Master Reports AND dedicated isolated Defaulters List
         function generateSortedReport() {
             const fromDate = document.getElementById('report-from-date').value;
             const toDate = document.getElementById('report-to-date').value;
@@ -427,9 +478,8 @@
             });
 
             if (filteredLogs.length === 0) {
-                const standardFallback = `<tr><td colspan="6" class="p-8 text-center text-sm font-medium text-gray-400 bg-gray-50/50">No attendance history records discovered matching parameters.</td></tr>`;
-                tableBody.innerHTML = standardFallback;
-                defaulterGrid.innerHTML = `<div class="col-span-full p-4 text-center text-sm text-red-500 font-medium">No recorded histories found in this scope window.</div>`;
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-sm font-medium text-gray-400 bg-gray-50/50">No histories found.</td></tr>`;
+                defaulterGrid.innerHTML = `<div class="col-span-full p-4 text-center text-sm text-red-500 font-medium">No records found.</div>`;
                 return;
             }
 
@@ -461,7 +511,6 @@
                 };
             });
 
-            // Sort Rule: Decreasing Percentage, fallback Ascending Lexicographical Roll No.
             sortedArray.sort((a, b) => {
                 if (b.percentage !== a.percentage) return b.percentage - a.percentage;
                 return a.roll.localeCompare(b.roll); 
@@ -475,39 +524,33 @@
                 
                 const rowClass = isDefaulter ? 'bg-red-50/40 text-red-900 border-red-100 hover:bg-red-50/60' : 'hover:bg-gray-50';
                 const pctBadgeColor = isDefaulter ? 'text-red-600 bg-red-100' : 'text-green-700 bg-green-100';
-                const alertIcon = isDefaulter ? '<span class="material-icons text-xs">warning</span>' : '<span class="material-icons text-xs">check</span>';
 
-                // Append row into full global index matrix tracker
                 const rowHtml = `
                     <tr class="transition-colors border-b border-gray-100 ${rowClass}">
                         <td class="p-4 text-center font-bold text-gray-400">${index + 1}</td>
                         <td class="p-4 font-bold tracking-tight">${student.roll}</td>
                         <td class="p-4 font-medium text-gray-900">${student.name}</td>
-                        <td class="p-4 text-gray-600 font-medium">${student.classesConducted}</td>
-                        <td class="p-4 text-gray-600 font-medium">${student.classesAttended}</td>
+                        <td class="p-4 text-gray-600 text-xs">${student.classesConducted}</td>
+                        <td class="p-4 text-gray-600 text-xs">${student.classesAttended}</td>
                         <td class="p-4">
-                            <span class="inline-flex items-center gap-1 font-bold text-xs px-2.5 py-1 rounded-full ${pctBadgeColor}">
-                                ${alertIcon} ${displayPct}%
+                            <span class="inline-flex items-center font-bold text-xs px-2.5 py-1 rounded-full ${pctBadgeColor}">
+                                ${displayPct}%
                             </span>
                         </td>
                     </tr>
                 `;
                 tableBody.insertAdjacentHTML('beforeend', rowHtml);
 
-                // Isolate and inject directly into the isolated Defaulters List summary box if criteria matches
                 if (isDefaulter) {
-                    defaulterCounter++;
+                    defauterCounter = defaulterCounter + 1;
                     const cardHtml = `
                         <div class="bg-white border border-red-200 rounded-lg p-3 shadow-xs flex justify-between items-center">
-                            <div>
-                                <p class="text-xs font-bold text-gray-900 tracking-tight">${student.roll}</p>
-                                <p class="text-sm font-medium text-gray-700 mt-0.5">${student.name}</p>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-gray-900 truncate">${student.roll}</p>
+                                <p class="text-xs font-medium text-gray-700 mt-0.5 truncate">${student.name}</p>
                             </div>
-                            <div class="text-right">
-                                <span class="bg-red-100 text-red-700 font-bold text-xs px-2 py-1 rounded-md inline-block">
-                                    ${displayPct}%
-                                </span>
-                                <p class="text-[10px] text-gray-400 mt-1 font-semibold">${student.classesAttended}/${student.classesConducted} Days</p>
+                            <div class="text-right flex-shrink-0 ml-2">
+                                <span class="bg-red-100 text-red-700 font-bold text-xs px-2 py-1 rounded-md">${displayPct}%</span>
                             </div>
                         </div>
                     `;
@@ -519,20 +562,26 @@
 
             if(defaulterCounter === 0) {
                 defaulterGrid.innerHTML = `
-                    <div class="col-span-full p-4 bg-green-100/50 border border-green-200 text-center text-sm text-green-800 rounded-lg font-medium flex items-center justify-center gap-2">
-                        <span class="material-icons text-sm">stars</span> Perfect Status! Zero students are currently under the 75% baseline requirement threshold.
+                    <div class="col-span-full p-4 bg-green-100/50 border border-green-200 text-center text-xs text-green-800 rounded-lg font-medium">
+                        Perfect! Zero students under 75% threshold.
                     </div>
                 `;
             }
         }
 
-        // View Router Switching Engine
         function switchView(viewId) {
             document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-mark-attendance').classList.add('hidden');
             document.getElementById('view-reports').classList.add('hidden');
-
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+            // Handle mobile navigation structural resetting
+            if(window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar-container');
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('sidebar-visible');
+                sidebar.classList.add('sidebar-hidden');
+            }
 
             const navButtons = document.querySelectorAll('.nav-btn');
             navButtons.forEach(btn => {
@@ -545,12 +594,9 @@
             const titles = { 'dashboard': 'Dashboard', 'mark-attendance': 'Mark Attendance', 'reports': 'Reports & Analytics' };
             document.getElementById('page-title').innerText = titles[viewId];
 
-            if(viewId === 'reports') {
-                generateSortedReport();
-            }
+            if(viewId === 'reports') generateSortedReport();
         }
 
-        // Initial launch configuration parameters
         renderSubjectCards();
         initAttendanceSheet();
         generateSortedReport();
