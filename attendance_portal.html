@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-64 bg-indigo-900 text-white flex flex-col justify-between hidden md:flex">
+            <div>
+                <div class="p-5 text-2xl font-bold tracking-wider border-b border-indigo-800 flex items-center gap-2">
+                    <span class="material-icons">school</span> Attendify
+                </div>
+                <nav class="p-4 space-y-2">
+                    <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-800 text-white font-medium transition-all">
+                        <span class="material-icons">dashboard</span> Dashboard
+                    </button>
+                    <button onclick="switchView('mark-attendance')" id="nav-mark" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-800 hover:text-white font-medium transition-all">
+                        <span class="material-icons">how_to_reg</span> Mark Attendance
+                    </button>
+                    <button onclick="switchView('reports')" id="nav-reports" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-800 hover:text-white font-medium transition-all">
+                        <span class="material-icons">analytics</span> View Reports
+                    </button>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-indigo-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-700 flex items-center justify-center font-bold text-lg">HOD</div>
+                    <div>
+                        <p class="text-sm font-semibold">Er. Sandeep Kumar</p>
+                        <p class="text-xs text-indigo-300">Department of CS</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-gray-600 focus:outline-none">
+                        <span class="material-icons">menu</span>
+                    </button>
+                    <h1 id="page-title" class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                </div>
+                <div class="text-sm font-medium text-gray-500" id="current-date"></div>
+            </header>
+
+            <div class="p-6 max-w-7xl w-full mx-auto space-y-6">
+
+                <section id="view-dashboard" class="space-y-6">
+                    <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-md font-bold text-gray-800">Tracked Metrics Overview</h2>
+                            <p class="text-xs text-gray-400">Review cumulative life logs or jump to a specific date matrix below.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label for="dashboard-date-picker" class="text-xs font-bold uppercase text-gray-500">Filter By Date:</label>
+                            <input type="date" id="dashboard-date-picker" onchange="renderSubjectCards()" class="bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400 font-medium uppercase">Total Students</p>
+                                <p id="total-stat" class="text-3xl font-bold mt-1 text-gray-900">0</p>
+                            </div>
+                            <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><span class="material-icons">groups</span></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400 font-medium uppercase">Selected Date Present</p>
+                                <p id="present-stat" class="text-3xl font-bold mt-1 text-green-600">0</p>
+                            </div>
+                            <div class="p-3 bg-green-50 text-green-600 rounded-lg"><span class="material-icons">check_circle</span></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400 font-medium uppercase">Selected Date Absent</p>
+                                <p id="absent-stat" class="text-3xl font-bold mt-1 text-red-600">0</p>
+                            </div>
+                            <div class="p-3 bg-red-50 text-red-600 rounded-lg"><span class="material-icons">cancel</span></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400 font-medium uppercase">Total Subjects</p>
+                                <p id="subjects-count-stat" class="text-3xl font-bold mt-1 text-indigo-600">4</p>
+                            </div>
+                            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg"><span class="material-icons">menu_book</span></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-icons text-indigo-600">class</span> Subject-wise Attendance Metrics
+                        </h3>
+                        <div id="subject-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            </div>
+                    </div>
+                </section>
+
+                <section id="view-mark-attendance" class="hidden space-y-6">
+                    <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-wrap gap-4 items-end">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Select Subject/Class</label>
+                            <select id="subject-dropdown" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                                </select>
+                        </div>
+                        <div class="min-w-[180px]">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Attendance Date</label>
+                            <input type="date" id="attendance-date-picker" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500 font-medium">
+                        </div>
+                        <div class="w-full sm:w-auto">
+                            <button onclick="submitAttendance()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-xs flex items-center justify-center gap-2 transition-colors">
+                                <span class="material-icons text-sm">save</span> Submit Sheet
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <th class="p-4 w-24">Roll No.</th>
+                                    <th class="p-4">Student Name</th>
+                                    <th class="p-4 text-center w-48">Status Toggle</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-roster" class="divide-y divide-gray-100 text-sm">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="view-reports" class="hidden space-y-6">
+                    <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-lg">Dynamic Performance & Defaulter Ledger</h3>
+                            <p class="text-xs text-gray-400 mt-0.5">Generates ranked lists and tracks criteria thresholds based on timeline logs.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div class="w-full sm:w-64">
+                                <label for="report-subject-dropdown" class="block text-xs font-bold uppercase text-gray-500 mb-1">Subject Scope:</label>
+                                <select id="report-subject-dropdown" onchange="generateSortedReport()" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                                    <option value="all">-- All Subjects Aggregate --</option>
+                                    </select>
+                            </div>
+                            <div>
+                                <label for="report-from-date" class="block text-xs font-bold uppercase text-gray-500 mb-1">From:</label>
+                                <input type="date" id="report-from-date" onchange="generateSortedReport()" class="bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                            </div>
+                            <div>
+                                <label for="report-to-date" class="block text-xs font-bold uppercase text-gray-500 mb-1">To:</label>
+                                <input type="date" id="report-to-date" onchange="generateSortedReport()" class="bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 focus:outline-none focus:border-indigo-500 font-medium">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50 border border-red-200 p-5 rounded-xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-red-200 pb-2">
+                            <h4 class="text-red-800 font-bold text-sm flex items-center gap-2">
+                                <span class="material-icons text-red-600">gavel</span> Flagged Defaulter Roster (&lt; 75% Attendance Only)
+                            </h4>
+                            <span id="defaulter-badge-count" class="bg-red-600 text-white font-bold text-xs px-2.5 py-0.5 rounded-full">0 Students</span>
+                        </div>
+                        <div id="defaulter-grid-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-gray-800 text-md flex items-center gap-2">
+                                <span class="material-icons text-indigo-600">sort</span> Full Performance Matrix (All Students Ranked)
+                            </h3>
+                        </div>
+                        <div class="overflow-hidden border border-gray-100 rounded-lg">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase">
+                                    <tr>
+                                        <th class="p-4 w-12 text-center">Rank</th>
+                                        <th class="p-4">Roll No.</th>
+                                        <th class="p-4">Student Name</th>
+                                        <th class="p-4">Classes Conducted</th>
+                                        <th class="p-4">Classes Attended</th>
+                                        <th class="p-4">Total Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-table-body" class="divide-y divide-gray-100 text-sm text-gray-600">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Default Subject Tracker Initialization
+        const subjectData = {
+            "sub-1": { name: "Code- 2418501: Data Communication and Computer Network", targetLectures: 40, lecturesDone: 0, totalPresent: 0 },
+            "sub-2": { name: "Code- 2418502: Software Engineering", targetLectures: 40, lecturesDone: 0, totalPresent: 0 },
+            "sub-3": { name: "Code- 2418503: Data Science, Data Warehousing and Data Mining", targetLectures: 40, lecturesDone: 0, totalPresent: 0 },
+            "sub-4": { name: "Code- 2400504: Drone Technology", targetLectures: 40, lecturesDone: 0, totalPresent: 0 }
+        };
+
+        // Master Historic Ledger Log Array
+        const submissionHistory = [];
+
+        // Student Database Array
+        const students = [
+            { Roll: "24/CSE-001", Name: "Anushri Singh" },{ Roll: "24/CSE-002", Name: "Sakhsham Raj" },{ Roll: "24/CSE-004", Name: "Piyush Kumar Choudhary" },
+            { Roll: "24/CSE-007", Name: "Md. Sakir Jalal"},{ Roll: "24/CSE-008", Name: "Amrit Raj" },{ Roll: "24/CSE-009", Name: "Kabyanjali Sinha" },
+            { Roll: "24/CSE-010", Name: "Nandani Kumari" },{ Roll: "24/CSE-012", Name: "Aditya Ranjan" },{ Roll: "24/CSE-013", Name: "Sushil Kumar" },
+            { Roll: "24/CSE-015", Name: "Md. Shad Alam" },{ Roll: "24/CSE-016", Name: "Himanshu Shekhar" },{ Roll: "24/CSE-019", Name: "Anurag Kumar" },
+            { Roll: "24/CSE-020", Name: "Abhishek Kumar" },{ Roll: "24/CSE-021", Name: "Govind Kumar" },{ Roll: "24/CSE-025", Name: "Krishna Kumar" },
+            { Roll: "24/CSE-026", Name: "Prameer Narayan" },{ Roll: "24/CSE-028", Name: "Arpit Kumar" },{ Roll: "24/CSE-039", Name: "Priya Kumari" },
+            { Roll: "24/CSE-040", Name: "Abhishek Kumar" },{ Roll: "24/CSE-042", Name: "Ankit Singh" },{ Roll: "24/CSE-045", Name: "Priya Kumari" },
+            { Roll: "24/CSE-051", Name: "Alok Kumar" }, { Roll: "24/CSE-058", Name: "Sanjeev Kumar" },{ Roll: "24/CSE-060", Name: "Deepak Kumar" }
+        ];
+
+        // Format and set up local time tracking defaults
+        const todayISODate = new Date().toISOString().split('T')[0];
+        document.getElementById('dashboard-date-picker').value = todayISODate;
+        document.getElementById('attendance-date-picker').value = todayISODate;
+        document.getElementById('report-from-date').value = todayISODate;
+        document.getElementById('report-to-date').value = todayISODate;
+
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        });
+
+        // Render Subject Cards to Dashboard
+        function renderSubjectCards() {
+            const gridContainer = document.getElementById('subject-cards-grid');
+            gridContainer.innerHTML = '';
+
+            const activeFilterDate = document.getElementById('dashboard-date-picker').value;
+            
+            let globalFilteredPresent = 0;
+            let globalFilteredAbsent = 0;
+
+            Object.keys(subjectData).forEach(key => {
+                const sub = subjectData[key];
+                const totalPossibleSeats = sub.lecturesDone * students.length;
+                const overallPercentage = totalPossibleSeats > 0 ? ((sub.totalPresent / totalPossibleSeats) * 100).toFixed(1) : "0.0";
+                
+                const logsForDate = submissionHistory.filter(item => item.date === activeFilterDate && item.subjectId === key);
+                let dateLecturesCount = logsForDate.length;
+                let datePresentCount = logsForDate.reduce((sum, item) => sum + item.presentCount, 0);
+                let dateTotalSeats = dateLecturesCount * students.length;
+
+                globalFilteredPresent += datePresentCount;
+                globalFilteredAbsent += logsForDate.reduce((sum, item) => sum + item.absentCount, 0);
+
+                const badgeColor = overallPercentage >= 75 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
+
+                const cardHtml = `
+                    <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <h4 class="font-bold text-gray-800 text-sm line-clamp-2">${sub.name}</h4>
+                                <span class="text-xs px-2.5 py-1 font-semibold rounded-full ${badgeColor}">${overallPercentage}% Attended</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Course Allocation Tracking</p>
+                        </div>
+
+                        <div class="bg-indigo-50/50 p-2.5 rounded-lg border border-indigo-100/60 space-y-1">
+                            <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Metrics On Chosen Date (${activeFilterDate}):</p>
+                            <div class="flex justify-between text-xs font-semibold text-gray-700">
+                                <span>Lectures Marked Today: <b class="text-gray-900">${dateLecturesCount}</b></span>
+                                <span>Attended: <b class="text-indigo-600">${datePresentCount} / ${dateTotalSeats}</b></span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-50 text-center">
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total Lectures</p>
+                                <p class="text-lg font-bold text-gray-700 mt-0.5">${sub.targetLectures}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Lectures Done</p>
+                                <p class="text-lg font-bold text-indigo-600 mt-0.5">${sub.lecturesDone}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Total Attended</p>
+                                <p class="text-lg font-bold text-green-600 mt-0.5">${sub.totalPresent}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                gridContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            document.getElementById('present-stat').innerText = globalFilteredPresent;
+            document.getElementById('absent-stat').innerText = globalFilteredAbsent;
+            document.getElementById('total-stat').innerText = students.length;
+            document.getElementById('subjects-count-stat').innerText = Object.keys(subjectData).length;
+        }
+
+        // Initialize and Render the Student Attendance Sheet and dropdown items
+        function initAttendanceSheet() {
+            const dropdown = document.getElementById('subject-dropdown');
+            const reportDropdown = document.getElementById('report-subject-dropdown');
+            dropdown.innerHTML = '';
+            reportDropdown.innerHTML = '<option value="all">-- All Subjects Aggregate --</option>';
+            
+            Object.keys(subjectData).forEach(key => {
+                const optString = `<option value="${key}">${subjectData[key].name}</option>`;
+                dropdown.insertAdjacentHTML('beforeend', optString);
+                reportDropdown.insertAdjacentHTML('beforeend', optString);
+            });
+
+            const rosterContainer = document.getElementById('attendance-roster');
+            rosterContainer.innerHTML = '';
+
+            students.forEach((student) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors student-row';
+                row.setAttribute('data-roll', student.Roll);
+                row.setAttribute('data-name', student.Name);
+                row.setAttribute('data-status', 'P'); 
+                
+                row.innerHTML = `
+                    <td class="p-4 font-semibold text-gray-700">${student.Roll}</td>
+                    <td class="p-4 font-medium text-gray-900">${student.Name}</td>
+                    <td class="p-4 text-center">
+                        <div class="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-100">
+                            <button type="button" onclick="toggleStatus(this, 'P')" class="status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-green-600 text-white shadow-xs">
+                                Present
+                            </button>
+                            <button type="button" onclick="toggleStatus(this, 'A')" class="status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-gray-500 hover:text-gray-900">
+                                Absent
+                            </button>
+                        </div>
+                    </td>
+                `;
+                rosterContainer.appendChild(row);
+            });
+        }
+
+        function toggleStatus(btn, status) {
+            const container = btn.parentElement;
+            const buttons = container.querySelectorAll('.status-btn');
+            const row = container.closest('.student-row');
+            row.setAttribute('data-status', status);
+
+            buttons.forEach(b => {
+                b.className = 'status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-gray-500 hover:text-gray-900';
+            });
+
+            if (status === 'P') {
+                btn.className = 'status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-green-600 text-white shadow-xs';
+            } else {
+                btn.className = 'status-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-red-600 text-white shadow-xs';
+            }
+        }
+
+        function submitAttendance() {
+            const selectedSubjectKey = document.getElementById('subject-dropdown').value;
+            const chosenDate = document.getElementById('attendance-date-picker').value;
+            
+            if(!chosenDate) {
+                alert("Please select a valid submission date.");
+                return;
+            }
+
+            const rows = document.querySelectorAll('.student-row');
+            let presentCount = 0;
+            let absentCount = 0;
+            const rosterManifest = [];
+
+            rows.forEach(row => {
+                const roll = row.getAttribute('data-roll');
+                const name = row.getAttribute('data-name');
+                const status = row.getAttribute('data-status');
+                
+                if (status === 'P') presentCount++;
+                if (status === 'A') absentCount++;
+
+                rosterManifest.push({ roll, name, status });
+            });
+
+            subjectData[selectedSubjectKey].lecturesDone += 1;
+            subjectData[selectedSubjectKey].totalPresent += presentCount;
+
+            submissionHistory.push({
+                date: chosenDate,
+                subjectId: selectedSubjectKey,
+                presentCount: presentCount,
+                absentCount: absentCount,
+                roster: rosterManifest
+            });
+
+            document.getElementById('dashboard-date-picker').value = chosenDate;
+            renderSubjectCards();
+            generateSortedReport(); 
+
+            alert(`Attendance Sheet Logged Successfully!\nDate: ${chosenDate}\nSubject: ${subjectData[selectedSubjectKey].name}\nPresent: ${presentCount}\nAbsent: ${absentCount}`);
+            switchView('dashboard');
+        }
+
+        // Generate Sorted Master Reports AND dedicated isolated Defaulters List
+        function generateSortedReport() {
+            const fromDate = document.getElementById('report-from-date').value;
+            const toDate = document.getElementById('report-to-date').value;
+            const selectedSubject = document.getElementById('report-subject-dropdown').value;
+            const tableBody = document.getElementById('report-table-body');
+            const defaulterGrid = document.getElementById('defaulter-grid-list');
+            const defaulterBadgeCount = document.getElementById('defaulter-badge-count');
+
+            tableBody.innerHTML = '';
+            defaulterGrid.innerHTML = '';
+            defaulterBadgeCount.innerText = "0 Students";
+
+            if (!fromDate || !toDate) return;
+
+            const filteredLogs = submissionHistory.filter(log => {
+                const matchDate = log.date >= fromDate && log.date <= toDate;
+                const matchSubject = (selectedSubject === 'all') || (log.subjectId === selectedSubject);
+                return matchDate && matchSubject;
+            });
+
+            if (filteredLogs.length === 0) {
+                const standardFallback = `<tr><td colspan="6" class="p-8 text-center text-sm font-medium text-gray-400 bg-gray-50/50">No attendance history records discovered matching parameters.</td></tr>`;
+                tableBody.innerHTML = standardFallback;
+                defaulterGrid.innerHTML = `<div class="col-span-full p-4 text-center text-sm text-red-500 font-medium">No recorded histories found in this scope window.</div>`;
+                return;
+            }
+
+            const studentStats = {};
+            students.forEach(s => {
+                studentStats[s.Roll] = { name: s.Name, classesConducted: 0, classesAttended: 0 };
+            });
+
+            filteredLogs.forEach(log => {
+                log.roster.forEach(record => {
+                    if (studentStats[record.roll]) {
+                        studentStats[record.roll].classesConducted += 1;
+                        if (record.status === 'P') {
+                            studentStats[record.roll].classesAttended += 1;
+                        }
+                    }
+                });
+            });
+
+            const sortedArray = Object.keys(studentStats).map(roll => {
+                const stat = studentStats[roll];
+                const pct = stat.classesConducted > 0 ? (stat.classesAttended / stat.classesConducted) * 100 : 0.0;
+                return {
+                    roll: roll,
+                    name: stat.name,
+                    classesConducted: stat.classesConducted,
+                    classesAttended: stat.classesAttended,
+                    percentage: pct
+                };
+            });
+
+            // Sort Rule: Decreasing Percentage, fallback Ascending Lexicographical Roll No.
+            sortedArray.sort((a, b) => {
+                if (b.percentage !== a.percentage) return b.percentage - a.percentage;
+                return a.roll.localeCompare(b.roll); 
+            });
+
+            let defaulterCounter = 0;
+
+            sortedArray.forEach((student, index) => {
+                const displayPct = student.percentage.toFixed(1);
+                const isDefaulter = student.percentage < 75.0;
+                
+                const rowClass = isDefaulter ? 'bg-red-50/40 text-red-900 border-red-100 hover:bg-red-50/60' : 'hover:bg-gray-50';
+                const pctBadgeColor = isDefaulter ? 'text-red-600 bg-red-100' : 'text-green-700 bg-green-100';
+                const alertIcon = isDefaulter ? '<span class="material-icons text-xs">warning</span>' : '<span class="material-icons text-xs">check</span>';
+
+                // Append row into full global index matrix tracker
+                const rowHtml = `
+                    <tr class="transition-colors border-b border-gray-100 ${rowClass}">
+                        <td class="p-4 text-center font-bold text-gray-400">${index + 1}</td>
+                        <td class="p-4 font-bold tracking-tight">${student.roll}</td>
+                        <td class="p-4 font-medium text-gray-900">${student.name}</td>
+                        <td class="p-4 text-gray-600 font-medium">${student.classesConducted}</td>
+                        <td class="p-4 text-gray-600 font-medium">${student.classesAttended}</td>
+                        <td class="p-4">
+                            <span class="inline-flex items-center gap-1 font-bold text-xs px-2.5 py-1 rounded-full ${pctBadgeColor}">
+                                ${alertIcon} ${displayPct}%
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', rowHtml);
+
+                // Isolate and inject directly into the isolated Defaulters List summary box if criteria matches
+                if (isDefaulter) {
+                    defaulterCounter++;
+                    const cardHtml = `
+                        <div class="bg-white border border-red-200 rounded-lg p-3 shadow-xs flex justify-between items-center">
+                            <div>
+                                <p class="text-xs font-bold text-gray-900 tracking-tight">${student.roll}</p>
+                                <p class="text-sm font-medium text-gray-700 mt-0.5">${student.name}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-red-100 text-red-700 font-bold text-xs px-2 py-1 rounded-md inline-block">
+                                    ${displayPct}%
+                                </span>
+                                <p class="text-[10px] text-gray-400 mt-1 font-semibold">${student.classesAttended}/${student.classesConducted} Days</p>
+                            </div>
+                        </div>
+                    `;
+                    defaulterGrid.insertAdjacentHTML('beforeend', cardHtml);
+                }
+            });
+
+            defaulterBadgeCount.innerText = `${defaulterCounter} Student${defaulterCounter === 1 ? '' : 's'}`;
+
+            if(defaulterCounter === 0) {
+                defaulterGrid.innerHTML = `
+                    <div class="col-span-full p-4 bg-green-100/50 border border-green-200 text-center text-sm text-green-800 rounded-lg font-medium flex items-center justify-center gap-2">
+                        <span class="material-icons text-sm">stars</span> Perfect Status! Zero students are currently under the 75% baseline requirement threshold.
+                    </div>
+                `;
+            }
+        }
+
+        // View Router Switching Engine
+        function switchView(viewId) {
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-mark-attendance').classList.add('hidden');
+            document.getElementById('view-reports').classList.add('hidden');
+
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-800 hover:text-white font-medium transition-all";
+            });
+
+            const activeMap = { 'dashboard': 'nav-dashboard', 'mark-attendance': 'nav-mark', 'reports': 'nav-reports' };
+            document.getElementById(activeMap[viewId]).className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-800 text-white font-medium transition-all";
+            
+            const titles = { 'dashboard': 'Dashboard', 'mark-attendance': 'Mark Attendance', 'reports': 'Reports & Analytics' };
+            document.getElementById('page-title').innerText = titles[viewId];
+
+            if(viewId === 'reports') {
+                generateSortedReport();
+            }
+        }
+
+        // Initial launch configuration parameters
+        renderSubjectCards();
+        initAttendanceSheet();
+        generateSortedReport();
+    </script>
+</body>
+</html>
